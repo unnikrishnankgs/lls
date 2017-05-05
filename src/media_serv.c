@@ -11,6 +11,12 @@
 #include <stdio.h>
 #define MAX_PIPELINE_STR_LEN (1024)
 
+/**
+ * @player:
+ * udpsrc address="10.250.33.222" port=5050 ! 'application/x-rtp, media=video,  encoding-name=H264' 
+ * ! rtph264depay ! h264parse ! avdec_h264 ! autovideosink
+ */
+
 typedef struct
 {
     GstElement* pPipeline;
@@ -32,7 +38,7 @@ gboolean media_serv_start(t_MediaServ* apMediaServ)
         "avfvideosrc capture-screen=true "
         "! vtenc_h264 ! h264parse config-interval=1 disable-passthrough=true "
         "! video/x-h264, stream-format=byte-stream "
-        "! filesink location=sample.264");
+        "! rtph264pay ! udpsink host=\"10.250.33.222\" port=5050");
     apMediaServ->pPipeline = gst_parse_launch(apMediaServ->pcPipeline, &error);
 
     /**  */
