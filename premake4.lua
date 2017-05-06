@@ -27,5 +27,9 @@ project "lls"
     location         "build"
     buildoptions   { "`pkg-config --cflags glib-2.0 gio-2.0`" }
     linkoptions    { "`pkg-config --libs glib-2.0 gio-2.0`" }
+--@{linux
+    buildoptions   { "`pkg-config --cflags gstreamer-1.0`" }
+    linkoptions    { "`pkg-config --libs gstreamer-1.0`" }
+--@}linux
     libdirs        { "/Library/Frameworks/GStreamer.framework/Libraries/" }
     links          { "gstreamer-1.0" }

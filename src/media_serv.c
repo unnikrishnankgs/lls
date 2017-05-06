@@ -11,6 +11,8 @@
 #include <stdio.h>
 #define MAX_PIPELINE_STR_LEN (1024)
 
+#define MEDIA_PLAYER
+
 /**
  * @player:
  * udpsrc address="10.250.33.222" port=5050 ! 'application/x-rtp, media=video,  encoding-name=H264' 
@@ -34,14 +36,24 @@ gboolean media_serv_start(t_MediaServ* apMediaServ)
     GError* error = NULL;
     /** initialize GStreamer and configure the required pipeline */
     gst_init(NULL, NULL);
+#ifdef MEDIA_PLAYER
+    snprintf(apMediaServ->pcPipeline, MAX_PIPELINE_STR_LEN,
+             "udpsrc address=\"%s\" port=%d ! application/x-rtp, media=video, encoding-name=H264 "
+             "! rtph264depay ! h264parse ! avdec_h264 ! videoconvert ! glimagesink",
+             "192.168.0.167", 5050);
+#else
     snprintf(apMediaServ->pcPipeline, MAX_PIPELINE_STR_LEN, 
         "avfvideosrc capture-screen=true "
         "! vtenc_h264 ! h264parse config-interval=1 disable-passthrough=true "
         "! video/x-h264, stream-format=byte-stream "
         "! rtph264pay ! udpsink host=\"10.250.33.222\" port=5050");
+#endif
+    g_log(NULL, G_LOG_LEVEL_CRITICAL, "pipeline=[%s]\n", apMediaServ->pcPipeline);
+    
     apMediaServ->pPipeline = gst_parse_launch(apMediaServ->pcPipeline, &error);
 
     /**  */
+    res = gst_element_set_state((GstElement*)(apMediaServ->pPipeline), GST_STATE_PAUSED);
     res = gst_element_set_state((GstElement*)(apMediaServ->pPipeline), GST_STATE_PLAYING);
 
     apMediaServ->pGMainLoop = g_main_loop_new(NULL, FALSE);
